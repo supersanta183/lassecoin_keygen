@@ -34,16 +34,13 @@ fn generate_rsa_from_seed() -> RsaPrivateKey {
 }
 
 fn generate_12_word_seed_phrase() -> String {
-    let mut output = String::from("");
     let mut seed_phrase = String::from("");
 
     for _ in 0..12 {
         let word = random_word::gen(Lang::En);
-        output.push_str(&word);
-        output.push_str("\n");
         seed_phrase.push_str(&word);
         seed_phrase.push_str(" ");
     }
-    fs::write("seedphrase.txt", &output).expect("Unable to write to file");
+    fs::write("seedphrase.txt", &seed_phrase).expect("Unable to write to file");
     seed_phrase
 }
