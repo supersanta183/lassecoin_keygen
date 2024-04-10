@@ -5,8 +5,7 @@ use sha2::{Sha256, Digest};
 use std::fs;
 
 fn main() {
-    let priv_key = generate_rsa_from_seed();
-    let pub_key = RsaPublicKey::from(&priv_key);
+    let pub_key = generate_rsa_keypair();
     let pem = pub_key
         .to_pkcs1_pem(Default::default())
         .expect("failed to serialize public key");
@@ -14,9 +13,17 @@ fn main() {
     fs::write("pubkey.txt", &pem).expect("Unable to write to file");
 }
 
-fn generate_rsa_from_seed() -> RsaPrivateKey {
+fn generate_rsa_keypair() -> RsaPublicKey {
     //generate seed_phrase
     let seed_phrase = generate_12_word_seed_phrase();
+
+    let priv_key = generate_rsa_from_seed(seed_phrase);
+    let pub_key = RsaPublicKey::from(&priv_key);
+
+    pub_key
+}
+
+fn generate_rsa_from_seed(seed_phrase: String) -> RsaPrivateKey {
 
     // Generate a seed from the seed phrase
     let mut hasher = Sha256::new();
