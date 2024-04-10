@@ -1,8 +1,7 @@
 use rand::{rngs::StdRng, SeedableRng};
 use random_word::Lang;
 use rsa::{pkcs1::EncodeRsaPublicKey, RsaPrivateKey, RsaPublicKey};
-use sha2::Digest; // Add this import statement
-use sha2::Sha256; // Add this import statement
+use sha2::{Sha256, Digest};
 use std::fs;
 
 fn main() {
