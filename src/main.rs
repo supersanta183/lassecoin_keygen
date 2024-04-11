@@ -1,6 +1,6 @@
 mod keygen;
 
-use keygen::Keygen;
+use rsa_keygen::Keygen;
 
 
 fn main() {
