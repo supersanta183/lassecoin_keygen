@@ -14,6 +14,12 @@ pub struct KeyPair {
     pub pub_key: RsaPublicKey,
 }
 
+impl KeyPair {
+    pub fn new(priv_key: RsaPrivateKey, pub_key: RsaPublicKey) -> KeyPair {
+        KeyPair { priv_key, pub_key }
+    }
+}
+
 /// Keygen is used to generate a seedphrase and an RSA keypair
 pub struct Keygen {}
 
@@ -28,7 +34,6 @@ impl Keygen {
     /// ```
     pub fn new() -> Result<(String, KeyPair), String> {
         let seedphrase = Keygen::generate_seedphrase();
-
         let keypair = match Keygen::from_seedphrase(&seedphrase) {
             Ok(x) => x,
             Err(e) => return Err(e),
@@ -47,6 +52,7 @@ impl Keygen {
         // create a new randomly generated mnemonic phrase
         let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
         let phrase = mnemonic.phrase().to_owned();
+  
         phrase
     }
 
@@ -62,14 +68,14 @@ impl Keygen {
         let seed = Seed::new(&mnemonic, "");
         let seed_array = array_ref!(seed.as_bytes(), 0, 32);
         let mut rng = ChaCha20Rng::from_seed(*seed_array);
-
         let priv_key = match RsaPrivateKey::new(&mut rng, 2048) {
             Ok(x) => x,
             Err(e) => return Err(e.to_string()),
         };
         let pub_key = RsaPublicKey::from(&priv_key);
+        let keypair = KeyPair::new(priv_key, pub_key);
 
-        Ok(KeyPair { priv_key, pub_key })
+        Ok(keypair)
     }
 
     /// generates an RSA keypair (private key, public key) with an already known private key
@@ -82,7 +88,8 @@ impl Keygen {
     pub fn from_private_key(priv_key: &RsaPrivateKey) -> KeyPair {
         let p = priv_key.clone();
         let pub_key = RsaPublicKey::from(&p);
-        KeyPair { priv_key: p, pub_key }
+
+        KeyPair::new(p, pub_key)
     }
     
     /// exports private key to PEM (Privacy Enhanced Mail) format
@@ -123,7 +130,6 @@ impl Keygen {
     pub fn store_in_file(keypair: KeyPair, seedphrase: &String, filename: &str) {
         let priv_key_pem = Keygen::export_private_key_to_pem(&keypair.priv_key).unwrap();
         let pub_key_pem = Keygen::export_public_key_to_pem(&keypair.pub_key).unwrap();
-
         let data = format!(
             "Seedphrase: {}\nPrivate Key: {}\nPublic Key: {}",
             seedphrase, priv_key_pem, pub_key_pem
