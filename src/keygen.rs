@@ -1,9 +1,9 @@
 use arrayref::array_ref;
 use bip39::{Language, Mnemonic, MnemonicType, Seed};
-use rand::{SeedableRng};
+use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rsa::{pkcs1::EncodeRsaPublicKey, RsaPrivateKey, RsaPublicKey};
-use std::{fs};
+use std::fs;
 
 pub struct KeyPair {
     priv_key: RsaPrivateKey,
@@ -33,7 +33,7 @@ impl Keygen {
 
         let priv_key = match RsaPrivateKey::new(&mut rng, 2048) {
             Ok(x) => x,
-            Err(e) => return Err(e.to_string())
+            Err(e) => return Err(e.to_string()),
         };
         let pub_key = RsaPublicKey::from(&priv_key);
 
@@ -56,7 +56,7 @@ impl Keygen {
 
         let KeyPair = match self.generate_rsa_keypair(&seedphrase) {
             Ok(x) => x,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         };
 
         let keypair = self.generate_rsa_keypair(&seedphrase).unwrap();
@@ -67,12 +67,21 @@ impl Keygen {
     }
 }
 
-//#[test]
-/* fn test_from_seedphrase(){
-    let seedphrase = SeedPhrase::new().unwrap();
+#[test]
+fn generate_seedphrase_has_12_words() {
+    let keygen = Keygen::new();
+    let seedphrase = keygen.generate_seedphrase();
+    let words: Vec<&str> = seedphrase.split(" ").collect();
 
-    let key1 = Keygen::from_seedphrase(Some(&seedphrase)).unwrap().pub_key;
-    let key2 = Keygen::from_seedphrase(Some(&seedphrase)).unwrap().pub_key;
+    assert_eq!(words.len(), 12);
+}
 
-    assert_eq!(key1, key2);
-} */
+#[test]
+fn generate_keypair_returns_same_pub_key() {
+    let keygen = Keygen::new();
+    let seedphrase = keygen.generate_seedphrase();
+    let keypair = keygen.generate_rsa_keypair(&seedphrase).unwrap();
+    let keypair2 = keygen.generate_rsa_keypair(&seedphrase).unwrap();
+
+    assert_eq!(keypair.pub_key, keypair2.pub_key);
+}
