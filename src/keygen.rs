@@ -4,7 +4,6 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rsa::{
     pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey},
-    pkcs8::der::zeroize::Zeroizing,
     RsaPrivateKey, RsaPublicKey,
 };
 use std::fs;
