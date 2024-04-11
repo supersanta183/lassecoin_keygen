@@ -48,10 +48,7 @@ pub fn keypair_from_seedphrase(seedphrase: &Zeroizing<String>) -> Result<Keypair
     let seed = Seed::new(&mnemonic, "");
     let seed_array = array_ref!(seed.as_bytes(), 0, 32);
     let mut rng = ChaCha20Rng::from_seed(*seed_array);
-    let priv_key = match RsaPrivateKey::new(&mut rng, 2048) {
-        Ok(x) => x,
-        Err(e) => return Err(e.to_string()),
-    };
+    let priv_key = RsaPrivateKey::new(&mut rng, 2048).map_err(|err| err.to_string())?;
     let pub_key = RsaPublicKey::from(&priv_key);
 
     Ok((priv_key, pub_key))
@@ -86,10 +83,7 @@ pub fn keypair_from_private_key(priv_key: &RsaPrivateKey) -> (RsaPrivateKey, Rsa
 /// ```
 pub fn generate_seedphrase_and_keypair() -> Result<(Zeroizing<String>, Keypair), String> {
     let seedphrase = generate_seedphrase();
-    let keypair = match keypair_from_seedphrase(&seedphrase) {
-        Ok(x) => x,
-        Err(e) => return Err(e),
-    };
+    let keypair = keypair_from_seedphrase(&seedphrase).map_err(|err| err.to_string())?;
 
     Ok((seedphrase, keypair))
 }
