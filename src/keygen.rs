@@ -36,7 +36,7 @@ impl Keygen {
     /// # Examples
     /// ```
     /// let seedphrase = Keygen::generate_seedphrase();
-    /// let keypair = Keygen::generate_rsa_keypair(seedphrase);
+    /// let keypair = Keygen::generate_rsa_keypair(seedphrase).unwrap();
     /// ```
     pub fn generate_rsa_keypair(seedphrase: &String) -> Result<KeyPair, String> {
         let mnemonic = Mnemonic::from_phrase(seedphrase.as_str(), Language::English).unwrap();
@@ -59,7 +59,7 @@ impl Keygen {
     ///
     /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair();
+    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair().unwrap();
     /// ```
     pub fn generate_seedphrase_and_rsa_keypair() -> Result<(String, KeyPair), String> {
         let seedphrase = Keygen::generate_seedphrase();
@@ -76,7 +76,7 @@ impl Keygen {
     ///
     /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair();
+    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair().unwrap();
     /// Keygen::export_privatekey_to_pem(keypair.priv_key);
     /// ```
     pub fn export_private_key_to_pem(priv_key: &RsaPrivateKey) -> Result<String, String> {
@@ -91,7 +91,7 @@ impl Keygen {
     /// # Examples
     /// ```
     /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair();
-    /// Keygen::export_privatekey_to_pem(keypair.priv_key);
+    /// Keygen::export_privatekey_to_pem(keypair.pub_key);
     /// ```
     pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String> {
         match pub_key.to_pkcs1_pem(Default::default()) {
