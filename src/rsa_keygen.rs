@@ -13,11 +13,6 @@ use std::fs;
 /// Keypair is a tuple of RSA private key and RSA public key
 type Keypair = (RsaPrivateKey, RsaPublicKey);
 
-enum KeySize {
-    Bits2048 = 2048,
-    Bits4096 = 4096,
-}
-
 /// generates a 12 word seedphrase
 ///
 /// # Examples
@@ -118,9 +113,12 @@ pub fn pkcs1_pem_from_priv_key(priv_key: &RsaPrivateKey) -> Result<Zeroizing<Str
 /// let (seedphrase, (_, pub_key)) = generate_seedphrase_and_keypair().unwrap();
 /// let pem = pkcs1_pem_from_pub_key(&pub_key).unwrap();
 /// ```
-pub fn pkcs1_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> {
-    pub_key.to_pkcs1_pem(Default::default())
-        .map_err(|err| err.to_string())
+pub fn pkcs1_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<Zeroizing<String>, String> {
+    match pub_key.to_pkcs1_pem(Default::default())
+        .map_err(|err| err.to_string()) {
+            Ok(x) => Ok(Zeroizing::new(x)),
+            Err(e) => Err(e.to_string())
+        }
 }
 
 /// exports private key to pkcs8 PEM (Privacy Enhanced Mail) format
@@ -165,13 +163,14 @@ pub fn pkcs8_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> 
 /// ```
 pub fn store_in_file(keypair: Keypair, seedphrase: &mut Zeroizing<String>, filename: &str) {
     let mut priv_key_pem = pkcs8_pem_from_priv_key(&keypair.0).unwrap();
-    let pub_key_pem = pkcs8_pem_from_pub_key(&keypair.1).unwrap();
+    let mut pub_key_pem = pkcs8_pem_from_pub_key(&keypair.1).unwrap();
     let data = format!(
         "Seedphrase: {}\nPrivate Key: {}\nPublic Key: {}",
         seedphrase.as_str(), priv_key_pem.as_str(), pub_key_pem
     );
     priv_key_pem.zeroize();
     seedphrase.zeroize();
+    pub_key_pem.zeroize();
 
     fs::write(filename, data).expect("failed to write to file");
 }
