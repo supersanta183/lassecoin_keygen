@@ -18,6 +18,25 @@ pub struct KeyPair {
 pub struct Keygen {}
 
 impl Keygen {
+    /// generate a seed phrase and a RSA keypair,
+    /// seedphrase is stored in seedphrase.txt
+    /// public key is stored in pubkey.txt
+    ///
+    /// # Examples
+    /// ```
+    /// let (seedphrase, keypair) = Keygen::new().unwrap();
+    /// ```
+    pub fn new() -> Result<(String, KeyPair), String> {
+        let seedphrase = Keygen::generate_seedphrase();
+
+        let keypair = match Keygen::from_seedphrase(&seedphrase) {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        };
+
+        Ok((seedphrase, keypair))
+    }
+
     /// generates a 12 word seedphrase
     ///
     /// # Examples
@@ -36,9 +55,9 @@ impl Keygen {
     /// # Examples
     /// ```
     /// let seedphrase = Keygen::generate_seedphrase();
-    /// let keypair = Keygen::generate_rsa_keypair(seedphrase).unwrap();
+    /// let keypair = Keygen::from_seedphrase(seedphrase).unwrap();
     /// ```
-    pub fn generate_rsa_keypair(seedphrase: &String) -> Result<KeyPair, String> {
+    pub fn from_seedphrase(seedphrase: &String) -> Result<KeyPair, String> {
         let mnemonic = Mnemonic::from_phrase(seedphrase.as_str(), Language::English).unwrap();
         let seed = Seed::new(&mnemonic, "");
         let seed_array = array_ref!(seed.as_bytes(), 0, 32);
@@ -53,30 +72,24 @@ impl Keygen {
         Ok(KeyPair { priv_key, pub_key })
     }
 
-    /// generate a seed phrase and a RSA keypair,
-    /// seedphrase is stored in seedphrase.txt
-    /// public key is stored in pubkey.txt
-    ///
+    /// generates an RSA keypair (private key, public key) with an already known private key
+    /// 
     /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair().unwrap();
+    /// let (seedphrase, keypair) = Keygen::new().unwrap();
+    /// let keypair2 = Keygen::from_private_key(&keypair.priv_key);
     /// ```
-    pub fn generate_seedphrase_and_rsa_keypair() -> Result<(String, KeyPair), String> {
-        let seedphrase = Keygen::generate_seedphrase();
-
-        let keypair = match Keygen::generate_rsa_keypair(&seedphrase) {
-            Ok(x) => x,
-            Err(e) => return Err(e),
-        };
-
-        Ok((seedphrase, keypair))
+    pub fn from_private_key(priv_key: &RsaPrivateKey) -> KeyPair {
+        let p = priv_key.clone();
+        let pub_key = RsaPublicKey::from(&p);
+        KeyPair { priv_key: p, pub_key }
     }
-
+    
     /// exports private key to PEM (Privacy Enhanced Mail) format
     ///
     /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair().unwrap();
+    /// let (seedphrase, keypair) = Keygen::new().unwrap();
     /// Keygen::export_privatekey_to_pem(keypair.priv_key);
     /// ```
     pub fn export_private_key_to_pem(priv_key: &RsaPrivateKey) -> Result<String, String> {
@@ -90,7 +103,7 @@ impl Keygen {
     ///  
     /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and rsa_keypair();
+    /// let (seedphrase, keypair) = Keygen::new();
     /// Keygen::export_privatekey_to_pem(keypair.pub_key);
     /// ```
     pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String> {
@@ -102,9 +115,9 @@ impl Keygen {
 
     /// stores a seedphrase and keypair in a file with name filename.txt
     ///
-    /// #Example
+    /// # Examples
     /// ```
-    /// let (seedphrase, keypair) = Keygen::generate_seedphrase_and_rsa_keypair().unwrap();
+    /// let (seedphrase, keypair) = Keygen::new().unwrap();
     /// Keygen::store_in_file(keypair, &seedphrase, "id")
     /// ```
     pub fn store_in_file(keypair: KeyPair, seedphrase: &String, filename: &str) {
@@ -131,8 +144,8 @@ fn generate_seedphrase_has_12_words() {
 #[test]
 fn generate_keypair_returns_same_pub_key() {
     let seedphrase = Keygen::generate_seedphrase();
-    let keypair = Keygen::generate_rsa_keypair(&seedphrase).unwrap();
-    let keypair2 = Keygen::generate_rsa_keypair(&seedphrase).unwrap();
+    let keypair = Keygen::from_seedphrase(&seedphrase).unwrap();
+    let keypair2 = Keygen::from_seedphrase(&seedphrase).unwrap();
 
     assert_eq!(keypair.pub_key, keypair2.pub_key);
 }

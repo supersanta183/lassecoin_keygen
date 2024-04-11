@@ -4,6 +4,6 @@ use rsa_keygen::Keygen;
 
 
 fn main() {
-    let (seedphrase, keypair) = Keygen::generate_seedphrase_and_rsa_keypair().unwrap();
+    let (seedphrase, keypair) = Keygen::new().unwrap();
     Keygen::store_in_file(keypair, &seedphrase, "id");
 }
