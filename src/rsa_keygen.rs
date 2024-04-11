@@ -4,7 +4,7 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rsa::{
     pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey},
-    pkcs8::{EncodePrivateKey, EncodePublicKey},
+    pkcs8::{der::zeroize::Zeroize, EncodePrivateKey, EncodePublicKey},
     RsaPrivateKey, RsaPublicKey,
 };
 use rsa::pkcs8::der::zeroize::Zeroizing;
@@ -21,12 +21,12 @@ type Keypair = (RsaPrivateKey, RsaPublicKey);
 ///
 /// let seedphrase = generate_seedphrase();
 /// ```
-pub fn generate_seedphrase() -> String {
+pub fn generate_seedphrase() -> Zeroizing<String> {
     // create a new randomly generated mnemonic phrase
     let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
     let phrase = mnemonic.phrase().to_owned();
 
-    phrase
+    Zeroizing::new(phrase)
 }
 
 /// generates an RSA keypair (private key, public key) with an already known seedphrase
@@ -39,7 +39,7 @@ pub fn generate_seedphrase() -> String {
 /// let seedphrase = generate_seedphrase();
 /// let (priv_key, pub_key) = keypair_from_seedphrase(&seedphrase).unwrap();
 /// ```
-pub fn keypair_from_seedphrase(seedphrase: &String) -> Result<Keypair, String> {
+pub fn keypair_from_seedphrase(seedphrase: &Zeroizing<String>) -> Result<Keypair, String> {
     match Mnemonic::validate(&seedphrase, Language::English) {
         Ok(_) => (),
         Err(e) => return Err(e.to_string()),
@@ -84,7 +84,7 @@ pub fn keypair_from_private_key(priv_key: &RsaPrivateKey) -> (RsaPrivateKey, Rsa
 ///
 /// let (seedphrase, (priv_key, pub_key)) = generate_seedphrase_and_keypair().unwrap();
 /// ```
-pub fn generate_seedphrase_and_keypair() -> Result<(String, Keypair), String> {
+pub fn generate_seedphrase_and_keypair() -> Result<(Zeroizing<String>, Keypair), String> {
     let seedphrase = generate_seedphrase();
     let keypair = match keypair_from_seedphrase(&seedphrase) {
         Ok(x) => x,
@@ -164,13 +164,15 @@ pub fn pkcs8_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> 
 /// let (seedphrase, keypair) = generate_seedphrase_and_keypair().unwrap();
 /// store_in_file(keypair, &seedphrase, "id")
 /// ```
-pub fn store_in_file(keypair: Keypair, seedphrase: &String, filename: &str) {
-    let priv_key_pem = pkcs8_pem_from_priv_key(&keypair.0).unwrap();
+pub fn store_in_file(keypair: Keypair, seedphrase: &mut Zeroizing<String>, filename: &str) {
+    let mut priv_key_pem = pkcs8_pem_from_priv_key(&keypair.0).unwrap();
     let pub_key_pem = pkcs8_pem_from_pub_key(&keypair.1).unwrap();
     let data = format!(
         "Seedphrase: {}\nPrivate Key: {}\nPublic Key: {}",
-        seedphrase, priv_key_pem.as_str(), pub_key_pem
+        seedphrase.as_str(), priv_key_pem.as_str(), pub_key_pem
     );
+    priv_key_pem.zeroize();
+    seedphrase.zeroize();
 
     fs::write(filename, data).expect("failed to write to file");
 }
