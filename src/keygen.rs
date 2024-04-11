@@ -90,7 +90,7 @@ impl Keygen {
     /// # Examples
     /// ```
     /// let (seedphrase, keypair) = Keygen::new().unwrap();
-    /// Keygen::export_privatekey_to_pem(keypair.priv_key);
+    /// Keygen::export_privatekey_to_pem(keypair.priv_key).unwrap();
     /// ```
     pub fn export_private_key_to_pem(priv_key: &RsaPrivateKey) -> Result<String, String> {
         match priv_key.to_pkcs1_pem(Default::default()) {
@@ -104,7 +104,7 @@ impl Keygen {
     /// # Examples
     /// ```
     /// let (seedphrase, keypair) = Keygen::new();
-    /// Keygen::export_privatekey_to_pem(keypair.pub_key);
+    /// Keygen::export_publickey_to_pem(keypair.pub_key).unwrap();
     /// ```
     pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String> {
         match pub_key.to_pkcs1_pem(Default::default()) {
