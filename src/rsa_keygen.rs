@@ -165,8 +165,8 @@ pub fn pkcs8_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> 
 /// store_in_file(keypair, &seedphrase, "id")
 /// ```
 pub fn store_in_file(keypair: Keypair, seedphrase: &String, filename: &str) {
-    let priv_key_pem = pkcs1_pem_from_priv_key(&keypair.0).unwrap();
-    let pub_key_pem = pkcs1_pem_from_pub_key(&keypair.1).unwrap();
+    let priv_key_pem = pkcs8_pem_from_priv_key(&keypair.0).unwrap();
+    let pub_key_pem = pkcs8_pem_from_pub_key(&keypair.1).unwrap();
     let data = format!(
         "Seedphrase: {}\nPrivate Key: {}\nPublic Key: {}",
         seedphrase, priv_key_pem.as_str(), pub_key_pem
