@@ -1,5 +1,5 @@
 [package]
-name = "lassecoin_keygen"
+name = "RSA_keygen"
 version = "0.1.0"
 edition = "2021"
 
