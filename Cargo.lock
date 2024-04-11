@@ -159,12 +159,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
-name = "mnemonic"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2b8f3a258db515d5e91a904ce4ae3f73e091149b90cadbdb93d210bee07f63b"
-
-[[package]]
 name = "num-bigint-dig"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -335,11 +329,9 @@ name = "rsa_keygen"
 version = "1.0.4"
 dependencies = [
  "arrayref",
- "mnemonic",
  "rand",
  "rand_chacha",
  "rsa",
- "sha2",
  "tiny-bip39",
 ]
 
