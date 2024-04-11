@@ -1,6 +1,14 @@
 # rsa_keygen
 
 ## How to use:
+A keypair is of the type KeyPair:
+```Rust
+pub struct KeyPair {
+    pub priv_key: RsaPrivateKey,
+    pub pub_key: RsaPublicKey
+}
+```
+
 ``` Rust
 use rsa_keygen::Keygen;
 
