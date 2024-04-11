@@ -2,11 +2,11 @@
 
 ## How to use:
 A keypair is a struct where the first element is the private key and the second element is the public key:
-``` Rust
+```Rust
 type Keypair = (RsaPrivateKey, RsaPublicKey);
 ```
 
-``` Rust
+```Rust
 pub use rsa_keygen::generate_seedphrase;
 pub use rsa_keygen::keypair_from_seedphrase;
 pub use rsa_keygen::keypair_from_private_key;
@@ -26,18 +26,18 @@ let (priv_key, pub_key) = keypair_from_private_key(&keypair.priv_key);
 ```
 
 you can generate the seedphrase and keypair easily using the generate_seedphrase_and_keypair function:
-``` Rust
+```Rust
 let (seedphrase, keypair) = generate_seedphrase_and_keypair().unwrap();
 ```
 
 you can export the private key or the public key to pem format in order to make it more readable, using the export functions:
-``` Rust 
+```Rust 
 let pub_key_pem = export_public_key_to_pem(&keypair.pub_key).unwrap();
 let priv_key_pem = export_private_key_to_pem(&keypair.priv_key).unwrap();
 ```
 
 it's possible to write the keypair and seedphrase to a file using the store_in_file function:
-``` Rust
+```Rust
 store_in_file(keypair, &seedphrase, "id.txt");
 ```
 

@@ -4,8 +4,10 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rsa::{
     pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey},
+    pkcs8::{EncodePrivateKey, EncodePublicKey},
     RsaPrivateKey, RsaPublicKey,
 };
+use rsa::pkcs8::der::zeroize::Zeroizing;
 use std::fs;
 
 /// Keypair is a tuple of RSA private key and RSA public key
@@ -16,7 +18,7 @@ type Keypair = (RsaPrivateKey, RsaPublicKey);
 /// # Examples
 /// ```
 /// use keygen::generate_seedphrase;
-/// 
+///
 /// let seedphrase = generate_seedphrase();
 /// ```
 pub fn generate_seedphrase() -> String {
@@ -33,7 +35,7 @@ pub fn generate_seedphrase() -> String {
 /// ```
 /// use rsakeygen::generate_seedphrase;
 /// use rsakeygen::keypair_from_seedphrase;
-/// 
+///
 /// let seedphrase = generate_seedphrase();
 /// let (priv_key, pub_key) = keypair_from_seedphrase(&seedphrase).unwrap();
 /// ```
@@ -61,7 +63,7 @@ pub fn keypair_from_seedphrase(seedphrase: &String) -> Result<Keypair, String> {
 /// ```
 /// use rsakeygen::generate_seedphrase_and_keypair;
 /// use rsakeygen::keypair_from_private_key;
-/// 
+///
 /// let (seedphrase, (priv_key, _)) = generate_seedphrase_and_keypair().unwrap();
 /// let keypair2 = keypair_from_private_key(&priv_key);
 /// ```
@@ -79,7 +81,7 @@ pub fn keypair_from_private_key(priv_key: &RsaPrivateKey) -> (RsaPrivateKey, Rsa
 /// # Examples
 /// ```
 /// use rsakeygen::generate_seedphrase_and_keypair;
-/// 
+///
 /// let (seedphrase, (priv_key, pub_key)) = generate_seedphrase_and_keypair().unwrap();
 /// ```
 pub fn generate_seedphrase_and_keypair() -> Result<(String, Keypair), String> {
@@ -92,38 +94,64 @@ pub fn generate_seedphrase_and_keypair() -> Result<(String, Keypair), String> {
     Ok((seedphrase, keypair))
 }
 
-/// exports private key to PEM (Privacy Enhanced Mail) format
+/// exports private key to pkcs1 PEM (Privacy Enhanced Mail) format
 ///
 /// # Examples
 /// ```
 /// use rsakeygen::generate_seedphrase_and_keypair;
-/// use rsakeygen::export_private_key_to_pem;
-/// 
+/// use rsakeygen::pkcs1_pem_from_priv_key;
+///
 /// let (seedphrase, (priv_key, _)) = generate_seedphrase_and_keypair().unwrap();
-/// export_privatekey_to_pem(&priv_key).unwrap();
+/// let pem = pkcs1_pem_from_priv_key(&priv_key).unwrap();
 /// ```
-pub fn export_private_key_to_pem(priv_key: &RsaPrivateKey) -> Result<String, String> {
-    match priv_key.to_pkcs1_pem(Default::default()) {
-        Ok(x) => Ok((*x).clone()),
-        Err(e) => Err(e.to_string()),
-    }
+pub fn pkcs1_pem_from_priv_key(priv_key: &RsaPrivateKey) -> Result<Zeroizing<String>, String> {
+    priv_key.to_pkcs1_pem(Default::default())
+        .map_err(|err| err.to_string())
 }
 
-/// exports public key to PEM (Privacy Enhanced Mail) format
+/// exports public key to pkcs1 PEM (Privacy Enhanced Mail) format
 ///  
 /// # Examples
 /// ```
 /// use rsakeygen::generate_seedphrase_and_keypair;
-/// use rsakeygen::export_public_key_to_pem;
-/// 
+/// use rsakeygen::pkcs1_pem_from_pub_key;
+///
 /// let (seedphrase, (_, pub_key)) = generate_seedphrase_and_keypair().unwrap();
-/// export_privatekey_to_pem(&pub_key).unwrap();
+/// let pem = pkcs1_pem_from_pub_key(&pub_key).unwrap();
 /// ```
-pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String> {
-    match pub_key.to_pkcs1_pem(Default::default()) {
-        Ok(x) => Ok(x),
-        Err(e) => Err(e.to_string()),
-    }
+pub fn pkcs1_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> {
+    pub_key.to_pkcs1_pem(Default::default())
+        .map_err(|err| err.to_string())
+}
+
+/// exports private key to pkcs8 PEM (Privacy Enhanced Mail) format
+///  
+/// # Examples
+/// ```
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::pkcs8_from_priv_key;
+///
+/// let (seedphrase, (priv_key, pub_key)) = generate_seedphrase_and_keypair().unwrap();
+/// let pem_key = pkcs8_pem_from_priv_key(&priv_key).unwrap();
+/// ```
+pub fn pkcs8_pem_from_priv_key(priv_key: &RsaPrivateKey) -> Result<Zeroizing<String>, String> {
+    priv_key.to_pkcs8_pem(Default::default())
+        .map_err(|err| err.to_string())
+}
+
+/// exports public key to pkcs1 PEM (Privacy Enhanced Mail) format
+///  
+/// # Examples
+/// ```
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::pkcs8_from_pub;
+///
+/// let (seedphrase, (priv_key, pub_key)) = generate_seedphrase_and_keypair().unwrap();
+/// let pem_key = pkcs8_pem_from_pub_key(&pub_key).unwrap();
+/// ```
+pub fn pkcs8_pem_from_pub_key(pub_key: &RsaPublicKey) -> Result<String, String> {
+    pub_key.to_public_key_pem(Default::default())
+        .map_err(|err| err.to_string())
 }
 
 /// stores a seedphrase and keypair in a file with name filename.txt
@@ -132,16 +160,16 @@ pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String
 /// ```
 /// use rsakeygen::generate_seedphrase_and_keypair;
 /// use rsakeygen::store_in_file;
-/// 
+///
 /// let (seedphrase, keypair) = generate_seedphrase_and_keypair().unwrap();
 /// store_in_file(keypair, &seedphrase, "id")
 /// ```
 pub fn store_in_file(keypair: Keypair, seedphrase: &String, filename: &str) {
-    let priv_key_pem = export_private_key_to_pem(&keypair.0).unwrap();
-    let pub_key_pem = export_public_key_to_pem(&keypair.1).unwrap();
+    let priv_key_pem = pkcs1_pem_from_priv_key(&keypair.0).unwrap();
+    let pub_key_pem = pkcs1_pem_from_pub_key(&keypair.1).unwrap();
     let data = format!(
         "Seedphrase: {}\nPrivate Key: {}\nPublic Key: {}",
-        seedphrase, priv_key_pem, pub_key_pem
+        seedphrase, priv_key_pem.as_str(), pub_key_pem
     );
 
     fs::write(filename, data).expect("failed to write to file");
