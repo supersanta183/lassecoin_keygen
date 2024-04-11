@@ -1,10 +1,10 @@
-mod rsa_keygen;
+mod rsakeygen;
 
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use bip39::{Language, Mnemonic, MnemonicType, Seed};
 
-use rsa_keygen::generate_seedphrase_and_keypair;
+use rsakeygen::generate_seedphrase_and_keypair;
 
 fn main() {
     let (seedphrase, keypair) = generate_seedphrase_and_keypair().unwrap();

@@ -31,8 +31,8 @@ pub fn generate_seedphrase() -> String {
 ///
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase;
-/// use keygen::keypair_from_seedphrase;
+/// use rsakeygen::generate_seedphrase;
+/// use rsakeygen::keypair_from_seedphrase;
 /// 
 /// let seedphrase = generate_seedphrase();
 /// let (priv_key, pub_key) = keypair_from_seedphrase(&seedphrase).unwrap();
@@ -59,8 +59,8 @@ pub fn keypair_from_seedphrase(seedphrase: &String) -> Result<Keypair, String> {
 ///
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase_and_keypair;
-/// use keygen::keypair_from_private_key;
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::keypair_from_private_key;
 /// 
 /// let (seedphrase, (priv_key, _)) = generate_seedphrase_and_keypair().unwrap();
 /// let keypair2 = keypair_from_private_key(&priv_key);
@@ -78,7 +78,7 @@ pub fn keypair_from_private_key(priv_key: &RsaPrivateKey) -> (RsaPrivateKey, Rsa
 ///
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::generate_seedphrase_and_keypair;
 /// 
 /// let (seedphrase, (priv_key, pub_key)) = generate_seedphrase_and_keypair().unwrap();
 /// ```
@@ -96,8 +96,8 @@ pub fn generate_seedphrase_and_keypair() -> Result<(String, Keypair), String> {
 ///
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase_and_keypair;
-/// use keygen::export_private_key_to_pem;
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::export_private_key_to_pem;
 /// 
 /// let (seedphrase, (priv_key, _)) = generate_seedphrase_and_keypair().unwrap();
 /// export_privatekey_to_pem(&priv_key).unwrap();
@@ -113,8 +113,8 @@ pub fn export_private_key_to_pem(priv_key: &RsaPrivateKey) -> Result<String, Str
 ///  
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase_and_keypair;
-/// use keygen::export_public_key_to_pem;
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::export_public_key_to_pem;
 /// 
 /// let (seedphrase, (_, pub_key)) = generate_seedphrase_and_keypair().unwrap();
 /// export_privatekey_to_pem(&pub_key).unwrap();
@@ -130,8 +130,8 @@ pub fn export_public_key_to_pem(pub_key: &RsaPublicKey) -> Result<String, String
 ///
 /// # Examples
 /// ```
-/// use keygen::generate_seedphrase_and_keypair;
-/// use keygen::store_in_file;
+/// use rsakeygen::generate_seedphrase_and_keypair;
+/// use rsakeygen::store_in_file;
 /// 
 /// let (seedphrase, keypair) = generate_seedphrase_and_keypair().unwrap();
 /// store_in_file(keypair, &seedphrase, "id")
