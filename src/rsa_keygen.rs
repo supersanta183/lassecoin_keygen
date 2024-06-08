@@ -4,11 +4,12 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rsa::{
     pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey},
-    pkcs8::{der::zeroize::Zeroize, EncodePrivateKey, EncodePublicKey},
+    pkcs8::{EncodePrivateKey, EncodePublicKey},
     RsaPrivateKey, RsaPublicKey,
 };
 use rsa::pkcs8::der::zeroize::Zeroizing;
 use std::fs;
+use zeroize::Zeroize;
 
 /// Keypair is a tuple of RSA private key and RSA public key
 type Keypair = (RsaPrivateKey, RsaPublicKey);
@@ -44,10 +45,11 @@ pub fn keypair_from_seedphrase(seedphrase: &Zeroizing<String>) -> Result<Keypair
         Ok(_) => (),
         Err(e) => return Err(e.to_string()),
     };
-    let mnemonic = (Mnemonic::from_phrase(seedphrase.as_str(), Language::English).unwrap());
-    let seed = Seed::new(&mnemonic, "");
+    let mnemonic = Mnemonic::from_phrase(seedphrase.as_str(), Language::English).unwrap();
+    let mut seed = Seed::new(&mnemonic, "");
     let seed_array = *array_ref!(seed.as_bytes(), 0, 32);
     let mut rng = ChaCha20Rng::from_seed(seed_array);
+    seed.zeroize();
     let priv_key = RsaPrivateKey::new(&mut rng, 2048).map_err(|err| err.to_string())?;
     let pub_key = RsaPublicKey::from(&priv_key);
 
