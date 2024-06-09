@@ -326,7 +326,7 @@ dependencies = [
 
 [[package]]
 name = "rsa_keygen"
-version = "1.0.7"
+version = "1.0.8"
 dependencies = [
  "arrayref",
  "rand",
