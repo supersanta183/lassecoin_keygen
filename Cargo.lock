@@ -332,6 +332,7 @@ dependencies = [
  "rand",
  "rand_chacha",
  "rsa",
+ "sha2",
  "tiny-bip39",
  "zeroize",
 ]

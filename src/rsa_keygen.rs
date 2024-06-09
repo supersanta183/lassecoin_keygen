@@ -8,8 +8,9 @@ use rsa::{
     RsaPrivateKey, RsaPublicKey,
 };
 use rsa::pkcs8::der::zeroize::Zeroizing;
-use std::fs;
+use std::{fs, io::Read};
 use zeroize::Zeroize;
+use sha2::{self, Digest};
 
 /// Keypair is a tuple of RSA private key and RSA public key
 type Keypair = (RsaPrivateKey, RsaPublicKey);
@@ -47,13 +48,27 @@ pub fn keypair_from_seedphrase(seedphrase: &Zeroizing<String>) -> Result<Keypair
     };
     let mnemonic = Mnemonic::from_phrase(seedphrase.as_str(), Language::English).unwrap();
     let mut seed = Seed::new(&mnemonic, "");
-    let seed_array = *array_ref!(seed.as_bytes(), 0, 32);
-    let mut rng = ChaCha20Rng::from_seed(seed_array);
+    let mut seed_array = *array_ref!(seed.as_bytes(), 0, 32);
     seed.zeroize();
+    let mut rng = ChaCha20Rng::from_seed(seed_array);
+    seed_array.zeroize();
     let priv_key = RsaPrivateKey::new(&mut rng, 2048).map_err(|err| err.to_string())?;
     let pub_key = RsaPublicKey::from(&priv_key);
 
     Ok((priv_key, pub_key))
+}
+
+pub fn seedphrase_from_password(password: &Zeroizing<String>) -> Result<Zeroizing<String>, String> {
+    let mut hasher = sha2::Sha256::new();
+    hasher.update(password);
+    let mut password_hash = hasher.finalize();
+    let mut entropy: [u8 ; 16] = password_hash[..16].try_into().expect("wrong length");
+    password_hash.zeroize();
+    let mnemonic = Mnemonic::from_entropy(&entropy, Language::English).expect("failed to create mnemonic");
+    entropy.zeroize();
+    
+    let zeroized = Zeroizing::new(mnemonic.phrase().to_owned());
+    Ok(zeroized)
 }
 
 /// generates an RSA keypair (private key, public key) with an already known private key
